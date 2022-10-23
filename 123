@@ -1,0 +1,58 @@
+from inspect import stack
+
+
+def isstackfull():
+    global SIZE,stack,top
+    if top >=SIZE-1 :
+        return True
+    else : return False
+
+def isstackempty():
+    global SIZE,stack,top
+    if top==-1:
+        return True
+    else:
+        return False
+
+def push(data):
+    global SIZE, stack, top
+    if (isstackfull()):
+        print("stack is full")
+        return
+    top +=1
+    stack[top]=data
+    print(stack[top])
+    
+def pop():
+    global SIZE, stack, top,memory
+    if (isstackempty()):
+        print("stack is empty")
+        return
+   
+    data = stack[top]
+    stack[top]=None
+    top-=1
+    print()
+    return data
+SIZE = 5
+top=-1
+memory=[]
+stack=[None for _ in range(SIZE)]
+if __name__ == "__main__":
+    f = open('c:/Users/sung/Desktop/진달래꽃.txt','rt',encoding='utf-8')
+    f.readline()
+    memory.append(f.readline())
+    memory.append(f.readline())
+    memory.append(f.readline())
+    memory.append(f.readline())
+    print("-----원본-----")
+    for data in memory :
+        push(data)
+    print("-----거꾸로 처리된 결과-----")
+    for i in memory :
+        print(pop())
+        
+    
+    f.close()
+    f = open("진달래꽃.txt","rt")
+    f.close()
