@@ -1,0 +1,47 @@
+# 서버 코드
+
+import cv2
+import imagezmq
+
+image_hub = imagezmq.ImageHub()
+
+while True:
+    rpi_name, image = image_hub.recv_image()
+  
+    # 얼굴 인식용 Haar Cascade 파일 경로
+    face_cascade = cv2.CascadeClassifier('/usr/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml')
+
+    # 이미지를 회색조로 변환
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # 얼굴 인식 수행
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+    # 인식된 얼굴에 사각형 그리기
+    for (x,y,w,h) in faces:
+        cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,0),2)
+
+    cv2.imshow(rpi_name, image)
+    if cv2.waitKey(1) == ord('q'):
+        break
+  
+    image_hub.send_reply(b'OK')
+    
+
+# 클라이언트 코드
+
+import socket
+import time
+from imutils.video import VideoStream
+import imagezmq
+
+sender = imagezmq.ImageSender(connect_to='tcp://<server_ip_address>:5555') # 서버 IP 주소로 변경
+
+rpi_name = socket.gethostname() # send RPi hostname with each image
+
+picam = VideoStream(usePiCamera=True).start()
+time.sleep(2.0)  # allow camera sensor to warm up
+
+while True:  # send images as stream until Ctrl-C
+    image = picam.read()
+    sender.send_image(rpi_name, image)
