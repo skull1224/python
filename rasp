@@ -1,8 +1,8 @@
-from flask import Flask, render_template, Response
+ from flask import Flask, render_template, Response
 import cv2
 
 app = Flask(__name__)
-face_cascade = cv2.cuda.CascadeClassifier_create('path/to/cuda/haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier('path/to/haarcascade_frontalface_default.xml')
 
 def gen_frames():
     capture = cv2.VideoCapture(-1)
@@ -14,11 +14,12 @@ def gen_frames():
         if not success:
             break
         else:
-            gpu_frame = cv2.cuda_GpuMat()
-            gpu_frame.upload(frame)
-
-            gpu_gray = cv2.cuda.cvtColor(gpu_frame, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(gpu_gray).download()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(cv2.UMat(gray),
+                                                  scaleFactor=1.1,
+                                                  minNeighbors=5,
+                                                  minSize=(30, 30),
+                                                  flags=cv2.CASCADE_SCALE_IMAGE)
 
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
@@ -40,3 +41,4 @@ def video_feed():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port="8080")
+
