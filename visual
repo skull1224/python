@@ -1,0 +1,100 @@
+# 데이터 조작 관련
+import pandas as pd
+import numpy as np
+import re
+
+# 한국어 nlp
+from konlpy.tag import *   # 모든 형태소분석기 import 하기
+#1. hannanum = Hannanum()
+#2. kkma = Kkma()
+#3. komoran = Komoran()
+#4. okt = Okt()
+
+okt = Okt()
+
+### 위 4개중 원하는 형태소분석기를 사용하면 됨
+
+
+# 영어 nlp 
+import nltk
+from nltk.corpus import stopwords 
+from nltk.tokenize import word_tokenize
+
+# 시각화 관련
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
+from collections import Counter
+from PIL import Image
+
+# 기타
+from tqdm import tqdm_notebook, tqdm   # for문 진행상황 눈으로 확인 (loading bar)
+#count라는 데이터프레임을 사전형으로 변환
+data = dict(zip(count['word'].tolist(), count['count'].tolist()))
+
+wc = WordCloud(font_path='C:/Windows/Fonts/nanumgothicextrabold.ttf', #폰트
+               background_color='white',                              #배경색
+               width=800, height=600 ,                                #사이즈설정
+               max_words=200)                                         #단어갯수
+cloud = wc.generate_from_frequencies(data)                            #사전형태 데이터
+
+plt.figure(figsize=(10,10))                                           #액자사이즈설정
+plt.axis('off')                                                       #테두리 선 없애기
+plt.imshow(cloud, interpolation="bilinear")
+masking 관련 코드
+
+마스크라는 기능을 이용하여 원하는 모양의 워드클라우드를 만들 수 있다.
+
+​
+
+이미지의 경계선이 뚜렷한 png 파일이 필요하다.
+
+# 참고
+# https://noanswercode.tistory.com/8
+
+icon = Image.open('./log.png')    # 마스크가 될 이미지 불러오기 
+plt.imshow(icon)
+
+mask = Image.new("RGB", icon.size, (255,255,255))
+mask.paste(icon,icon)
+mask = np.array(mask)
+
+
+wc = WordCloud(font_path='C:/Windows/Fonts/nanumgothicextrabold.ttf', #폰트
+               background_color='white',                              #배경색
+               width=800, height=600 ,                                #사이즈설정
+               max_words=200,                                         #단어갯수
+               mask=mask)                                             #마스크설정   
+
+cloud = wc.generate_from_frequencies(data)                            #사전형태의 데이터
+
+plt.figure(figsize=(10,10))                                           #액자사이즈설정
+plt.axis('off')                                                       #테두리 선 없애기
+plt.imshow(cloud, interpolation="bilinear")
+워드클라우드에 색입히기
+
+wc = WordCloud(font_path='C:/Windows/Fonts/nanumgothicextrabold.ttf', #폰트
+               background_color='grey',                               #배경색
+               width=800, height=600 ,                                #사이즈설정
+               max_words=200,                                         #단어갯수
+               mask=mask)                                             #마스크설정             
+cloud = wc.generate_from_frequencies(data)                            #사전형태의 데이터
+
+plt.figure(figsize=(10,10))                                           #액자사이즈설정
+plt.axis('off')                                                       #테두리 선 없애기
+
+
+############## 워드클라우드 색 지정
+# 참고
+# https://stackoverflow.com/questions/43043263/word-cloud-in-python-with-customised-colour
+ 
+def grey_color_func(word, font_size, position,orientation,random_state=None, **kwargs):
+    return("hsl(0,0%%, %d%%)" % np.random.randint(1,100))   ## 색상코드/숫자를 조정해보세요
+                                                            ## hsl 색상코드 참고
+
+plt.imshow(cloud.recolor(color_func = grey_color_func),interpolation="bilinear")
+
+#################----------------------------
+def grey_color_func(word, font_size, position,orientation,random_state=None, **kwargs):
+    return("hsl(291,68%%, %d%%)" % np.random.randint(60,100))   ## 이부분 숫자를 조정
+
+plt.imshow(cloud.recolor(color_func = grey_color_func),interpolation="bilinear")
